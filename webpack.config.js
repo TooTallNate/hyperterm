@@ -6,8 +6,8 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 const isProd = nodeEnv === 'production';
 
 module.exports = {
-  devtool: isProd ? 'hidden-source-map' : 'cheap-eval-source-map',
-  entry: './lib/index.js',
+  devtool: isProd ? 'hidden-source-map' : 'eval-source-map',
+  entry: './lib/index-electron.js',
   output: {
     path: path.join(__dirname, 'app', 'dist'),
     filename: 'bundle.js'

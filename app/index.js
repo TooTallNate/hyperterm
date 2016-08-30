@@ -129,12 +129,12 @@ app.on('ready', () => {
       // a new session will be created by default.
       if (!fn) fn = (win) => win.rpc.emit('session add req');
 
-      // app.windowCallback is the createWindow callback
-      // that can be setted before the 'ready' app event
-      // and createWindow deifinition. It's exeuted in place of
-      // the callback passed as parameter, and deleted right after.
+      // `app.windowCallback` is the createWindow callback
+      // that can be set before the 'ready' app event
+      // and createWindow definition. It's executed in place of
+      // the callback passed as parameter, and deleted immediately after.
       (app.windowCallback || fn)(win);
-      delete (app.windowCallback);
+      delete app.windowCallback;
 
       // auto updates
       if (!isDev && process.platform !== 'linux') {
@@ -250,7 +250,7 @@ app.on('ready', () => {
     });
 
     // If file is dropped onto the terminal window, navigate event is prevented
-    // and his path is added to active session.
+    // and this path is added to active session.
     win.webContents.on('will-navigate', (event, url) => {
       var protocol = typeof url === 'string' && parseUrl(url).protocol;
       if (protocol === 'file:') {
@@ -364,7 +364,7 @@ app.on('open-file', (event, path) => {
     app.createWindow(callback);
   } else {
     // if createWindow not exists yet ('ready' event was not fired),
-    // sets his callback to an app.windowCallback property.
+    // sets this callback to an app.windowCallback property.
     app.windowCallback = callback;
   }
 });

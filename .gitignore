@@ -1,5 +1,7 @@
 # build output
 dist
+server/public/bundle.js
+server/public/assets
 
 # dependencies
 node_modules
