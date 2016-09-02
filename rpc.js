@@ -1,48 +1,32 @@
 const { EventEmitter } = require('events');
 
-class Server extends EventEmitter {
+class RPC extends EventEmitter {
 
   constructor (uid, input, output) {
     super();
-    this.ipcListener = this.ipcListener.bind(this);
-
-    if (this.destroyed) return;
-
     this.id = uid;
     this.input = input;
     this.output = output;
 
+    this.ipcListener = this.ipcListener.bind(this);
     input.on(uid, this.ipcListener);
-
-    // we intentionally subscribe to `on` instead of `once`
-    // to support reloading the window and re-initializing
-    // the channel
-    output.on('did-finish-load', () => {
-      output.send('init', uid);
-    });
   }
 
-  ipcListener (event, { ev, data }) {
-    super.emit(ev, data);
+  ipcListener (event, args) {
+    //console.log('ipcListener', event, args);
+    super.emit(args.ev, args.data);
   }
 
   emit (ch, data) {
-    this.wc.send(this.id, { ch, data });
+    const fakeEvent = {};
+    this.output.send(this.id, fakeEvent, { ch, data });
   }
 
   destroy () {
     this.removeAllListeners();
-    this.wc.removeAllListeners();
-    if (this.id) {
-      ipcMain.removeListener(this.id, this.ipcListener);
-    } else {
-      // mark for `genUid` in constructor
-      this.destroyed = true;
-    }
+    this.output.removeAllListeners();
+    this.input.removeListener(this.id, this.ipcListener);
   }
 
 }
-
-module.exports = function createRPC (win) {
-  return new Server(win);
-};
+module.exports = RPC;
