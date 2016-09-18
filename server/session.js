@@ -2,41 +2,41 @@ const { EventEmitter } = require('events');
 const { productName, version } = require('../app/package');
 const spawn = require('child_pty').spawn;
 
-const envFromConfig = {};
-
 module.exports = class Session extends EventEmitter {
 
-  constructor ({ rows, cols: columns, cwd, dockerId }) {
+  constructor ({ rows, cols: columns, cwd, id }) {
     super();
 
     // don't inherit from `process.env` since we're spawning
     // a docker bash instance
-    const baseEnv = Object.assign({}, {
-      SHELL: '/bin/bash',
+    const baseEnv = {
+      //SHELL: '/bin/bash',
       LANG: 'en_US.UTF-8',
       TERM: 'xterm-256color',
       TERM_PROGRAM: productName,
       TERM_PROGRAM_VERSION: version
-    }, envFromConfig);
+    };
 
-    const shell = 'docker';
-    const args = ['exec', '--interactive', '--tty', dockerId ];
-
-    // add env variables inside the docker container for bash
-    args.push('env');
-    Object.keys(baseEnv).forEach((key) => {
-      args.push(`${key}=${baseEnv[key]}`);
+    const env = Object.keys(baseEnv).map(name => {
+      return `${name}=${baseEnv[name]}`;
     });
+    const shell = 'kubectl';
+    const args = ['exec', '-i', '-t', id, '--', 'env', ...env ];
 
     // this is the actual $SHELL we're going to be running inside the container
-    //args.push('bash');
-    args.push('sh', '-c', 'cd ' + cwd + '; exec bash --login');
+    args.push('sh', '-c', 'cd ' + cwd + '; exec $(command -v bash || echo sh) --login');
+
+    console.log(shell, args);
 
     this.pty = spawn(shell, args, {
       columns,
-      rows
+      rows,
       // for Docker, the env vars and cwd are handled from within
       // the container via `env` and `cd` in the command line args
+      env: Object.assign({
+        ROWS: rows,
+        COLUMNS: columns
+      }, process.env)
     });
 
     this.pty.stdout.on('data', (data) => {

@@ -45,8 +45,8 @@ io.on('connection', function (socket) {
     shell.openExternal(url);
   });
 
-  rpc.on('new', ({ rows = 40, cols = 100, cwd = '$HOME' }) => {
-    const session = new Session({ rows, cols, cwd, dockerId: '34094bc6f3a4' });
+  rpc.on('new', ({ rows = 80, cols = 120, cwd = '$HOME' }) => {
+    const session = new Session({ rows, cols, cwd, id: 'hello-minikube-3015430129-fyljg' });
     sessions.set(uid, session);
 
     rpc.emit('session add', {
